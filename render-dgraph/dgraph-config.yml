@@ -1,6 +1,5 @@
 # Dgraph configuration for standalone deployment on Render
 
-datadir: /dgraph/data
 bindall: true
 
 # HTTP & GRPC ports

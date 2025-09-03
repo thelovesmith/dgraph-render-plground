@@ -7,7 +7,7 @@ RUN mkdir -p /dgraph/data /dgraph/config
 COPY dgraph-config.yml /dgraph/config/
 
 # Set working directory
-WORKDIR /dgraph
+WORKDIR /dgraph/data
 
 # Expose the Dgraph ports
 EXPOSE 8080 9080 8000
