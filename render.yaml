@@ -1,0 +1,47 @@
+project:
+  name: pyp-hypermode
+  description: "Hypermode project with embeddings and graph database services"
+services:
+  - type: web
+    name: embeddings
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    rootDir: render-transformer
+    plan: standard
+    region: oregon
+    branch: main
+    healthCheckPath: /health
+    envVars:
+      - key: TRANSFORMERS_CACHE
+        value: /tmp/transformers_cache
+      - key: API_KEY
+        generateValue: true
+      - key: SHOW_API_KEY_INFO
+        value: "true"
+    scaling:
+      minInstances: 1
+      maxInstances: 1
+  - type: web
+    plan: standard
+    name: dgraph-standalone
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    rootDir: render-dgraph
+    plan: starter
+    region: oregon
+    branch: main
+    healthCheckPath: /health
+    disk:
+      name: dgraph-data
+      mountPath: /dgraph/data
+      sizeGB: 10
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: DGRAPH_ALPHA_BINDALL
+        value: "true"
+      - key: DGRAPH_ALPHA_WHITELIST
+        value: "0.0.0.0/0"
+    scaling:
+      minInstances: 1
+      maxInstances: 1
