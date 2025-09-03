@@ -15,9 +15,6 @@ services:
         generateValue: true
       - key: SHOW_API_KEY_INFO
         value: "true"
-    scaling:
-      minInstances: 1
-      maxInstances: 1
   - type: web
     name: dgraph-standalone
     runtime: docker
@@ -38,6 +35,3 @@ services:
         value: "true"
       - key: DGRAPH_ALPHA_WHITELIST
         value: "0.0.0.0/0"
-    scaling:
-      minInstances: 1
-      maxInstances: 1
