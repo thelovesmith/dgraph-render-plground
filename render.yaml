@@ -1,12 +1,9 @@
-project:
-  name: pyp-hypermode
-  description: "Hypermode project with embeddings and graph database services"
 services:
   - type: web
     name: embeddings
     runtime: docker
     dockerfilePath: ./Dockerfile
-    rootDir: render-transformer
+    rootDir: embeddings
     plan: standard
     region: oregon
     branch: main
@@ -22,12 +19,11 @@ services:
       minInstances: 1
       maxInstances: 1
   - type: web
-    plan: standard
     name: dgraph-standalone
     runtime: docker
     dockerfilePath: ./Dockerfile
     rootDir: render-dgraph
-    plan: starter
+    plan: standard
     region: oregon
     branch: main
     healthCheckPath: /health
