@@ -1,4 +1,4 @@
-FROM dgraph/standalone:latest
+FROM dgraph/standalone:v25.0.0-preview6
 
 # Create directories for data and config
 RUN mkdir -p /dgraph/data /dgraph/config
