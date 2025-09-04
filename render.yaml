@@ -57,3 +57,22 @@ services:
         value: "true"
       - key: DGRAPH_TOKEN
         generateValue: true
+      - key: API_TOKEN  # Additional token for custom middleware
+        generateValue: true
+  - type: web
+    name: dgraph-proxy
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    rootDir: nginx-proxy
+    plan: starter
+    region: oregon
+    branch: main
+    healthCheckPath: /health
+    envVars:
+      - key: api_token  # Lowercase for envsubst compatibility
+        generateValue: true
+      - key: dgraph_service_url  # Dynamic service URL with random suffix  
+        fromService:
+          type: web
+          name: dgraph-standalone
+          property: host
