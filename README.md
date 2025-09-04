@@ -129,6 +129,18 @@ services:
 - **Dgraph Data**: 10GB persistent disk mounted at `/dgraph/data`
 - **Model Cache**: Temporary storage for ML models
 
+## Dgraph loading data
+- Set SSH in Render
+- Get the Service SSH connecion string ( click CONNECT > SSH)
+- Use SCP to copy the exported files to the Render disk
+```
+scp ~/Downloads/pyp-export/* srv-d2sh3remcj7s73a5871g@ssh.oregon.render.com:/dgraph/data/export
+```
+- Use dgraph live or bulk from the Render machine
+From Render, Connect and use the terminal or use ssh.
+```
+dgraph live -c 1 -f export/g01.rdf -s export/g01.schema -t "<token used in dgraph alpha>"
+```
 ## 🧪 Testing
 
 ### Embeddings Service
