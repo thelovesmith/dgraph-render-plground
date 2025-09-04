@@ -32,7 +32,7 @@ This directory contains the configuration files needed to deploy Dgraph as a sta
 The following environment variables are set automatically:
 - `PORT=8080` - Required by Render
 - `DGRAPH_ALPHA_BINDALL=true` - Allow connections from all IPs
-- `DGRAPH_ALPHA_WHITELIST=0.0.0.0/0` - Allow all IPs (adjust for production)
+- `DGRAPH_TOKEN` - auto generated used to set DGRAPH_ALPHA_SECURITY 
 
 ### Persistent Storage
 
@@ -42,7 +42,6 @@ A 10GB persistent disk is configured and mounted at `/dgraph/data` to ensure you
 
 Once deployed, your Dgraph instance will be available at:
 - GraphQL: `https://your-service-name.onrender.com/graphql`
-- Admin UI: `https://your-service-name.onrender.com:8080`
 - Health Check: `https://your-service-name.onrender.com/health`
 
 ## Security Considerations

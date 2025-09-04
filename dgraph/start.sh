@@ -2,10 +2,10 @@
 
 # Set Dgraph Alpha security token from environment variable
 if [ -n "$DGRAPH_TOKEN" ]; then
-    export DGRAPH_ALPHA_SECURITY="whitelist: 0.0.0.0/0;token=$DGRAPH_TOKEN"
+    export DGRAPH_ALPHA_SECURITY="whitelist=0.0.0.0/0;token=$DGRAPH_TOKEN"
     echo "Security token configured for Dgraph Alpha"
 else
-    export DGRAPH_ALPHA_SECURITY="whitelist: 0.0.0.0/0"
+    export DGRAPH_ALPHA_SECURITY="whitelist=0.0.0.0/0"
     echo "Warning: DGRAPH_TOKEN not set, running without security"
 fi
 
