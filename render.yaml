@@ -75,3 +75,8 @@ services:
           type: pserv
           name: dgraph-standalone
           property: host
+      - key: modus_service_url  # Dynamic service URL with random suffix  
+        fromService:
+          type: web
+          name: modus
+          property: host
