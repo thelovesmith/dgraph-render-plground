@@ -11,7 +11,7 @@ else
 fi
 
 # Start Dgraph Zero in the background
-# dgraph zero --config /dgraph/config/dgraph-config.yml &
+dgraph zero --config /dgraph/config/dgraph-config.yml &
 
 # Wait a moment for Zero to start
 # sleep 5
