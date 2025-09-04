@@ -1,4 +1,26 @@
+version: "1"
+databases:
+  - name: modus-db
+    databaseName: modus
+    user: modus
+    plan: basic-256mb
+    region: oregon
+    postgresMajorVersion: "17"
 services:
+  - type: web
+    name: modus
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    rootDir: api
+    plan: standard
+    region: oregon
+    branch: main
+    envVars:
+    - key: MODUS_DB
+      fromDatabase:
+          name: modus-db
+          property: connectionString
+    healthCheckPath: /health
   - type: web
     name: embeddings
     runtime: docker
