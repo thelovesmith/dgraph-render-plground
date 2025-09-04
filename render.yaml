@@ -45,7 +45,6 @@ services:
     plan: standard
     region: oregon
     branch: main
-    healthCheckPath: /health
     disk:
       name: dgraph-data
       mountPath: /dgraph/data
