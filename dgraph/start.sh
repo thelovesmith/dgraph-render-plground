@@ -14,10 +14,10 @@ fi
 dgraph zero --config /dgraph/config/dgraph-config.yml &
 
 # Wait a moment for Zero to start
-# sleep 5
+sleep 5
 
 # Start Dgraph Alpha
-#dgraph alpha --config /dgraph/config/dgraph-config.yml &
+dgraph alpha --config /dgraph/config/dgraph-config.yml &
 
 # Keep the container running indefinitely
 # This prevents the container from exiting even if dgraph processes are killed

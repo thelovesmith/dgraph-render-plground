@@ -10,7 +10,7 @@ COPY dgraph-config.yml /dgraph/config/
 WORKDIR /dgraph/data
 
 # Expose the Dgraph ports
-EXPOSE 8080 9080 8000
+EXPOSE 7080 8080 9080 8000
 
 # Start Dgraph in standalone mode
 COPY start.sh /
