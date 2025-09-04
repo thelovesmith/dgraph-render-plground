@@ -9,7 +9,7 @@
 #    export DGRAPH_ALPHA_SECURITY="whitelist=0.0.0.0/0"
 #    echo "Warning: DGRAPH_TOKEN not set, running without security"
 #fi
-
+export DGRAPH_ALPHA_SECURITY="whitelist=0.0.0.0/0"
 # Start Dgraph Zero in the background
 dgraph zero --config /dgraph/config/dgraph-config.yml &
 

@@ -4,5 +4,5 @@ bindall: true
 # HTTP & GRPC ports
 port_offset: 0
 # Security settings (adjust as needed)
-security:
-  whitelist: 0.0.0.0/0
+# security:
+#  whitelist: 0.0.0.0/0
