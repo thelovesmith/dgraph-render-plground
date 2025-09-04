@@ -60,7 +60,7 @@ services:
       - key: API_TOKEN  # Additional token for custom middleware
         generateValue: true
   - type: web
-    name: dgraph-proxy
+    name: hypermode
     runtime: docker
     dockerfilePath: ./Dockerfile
     rootDir: nginx-proxy
