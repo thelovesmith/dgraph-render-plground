@@ -37,7 +37,7 @@ services:
         generateValue: true
       - key: SHOW_API_KEY_INFO
         value: "true"
-  - type: web
+  - type: pserv
     name: dgraph-standalone
     runtime: docker
     dockerfilePath: ./Dockerfile
@@ -73,6 +73,6 @@ services:
         generateValue: true
       - key: dgraph_service_url  # Dynamic service URL with random suffix  
         fromService:
-          type: web
+          type: pserv
           name: dgraph-standalone
           property: host
