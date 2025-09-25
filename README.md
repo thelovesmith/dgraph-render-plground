@@ -1,6 +1,6 @@
-# Hypermode Infrastructure on Render
+# Dgraph Infrastructure on Render
 
-A complete infrastructure deployment for the Hypermode project, featuring sentence embeddings and graph database services on Render.com.
+A complete infrastructure deployment for Dgraph and sentence embeddings on Render.com.
 
 ## 🏗️ Architecture Overview
 
@@ -283,4 +283,3 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
-**Built with ❤️ for the Hypermode project**
