@@ -7,8 +7,6 @@ services:
     rootDir: dgraph
     plan: standard
     region: oregon
-    branch: main
-    healthCheckPath: /health
     disk:
       name: dgraph-data
       mountPath: /dgraph/data
@@ -29,7 +27,6 @@ services:
     rootDir: nginx-proxy
     plan: standard
     region: oregon
-    branch: main
     healthCheckPath: /health
     envVars:
       - key: api_token  # Lowercase for envsubst compatibility
