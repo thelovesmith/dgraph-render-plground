@@ -1,42 +1,5 @@
 version: "1"
-databases:
-  - name: modus-db
-    databaseName: modus
-    user: modus
-    plan: basic-256mb
-    region: oregon
-    postgresMajorVersion: "17"
 services:
-  - type: web
-    name: modus
-    runtime: docker
-    dockerfilePath: ./Dockerfile
-    rootDir: api
-    plan: standard
-    region: oregon
-    branch: main
-    envVars:
-    - key: MODUS_DB
-      fromDatabase:
-          name: modus-db
-          property: connectionString
-    healthCheckPath: /health
-  - type: web
-    name: embeddings
-    runtime: docker
-    dockerfilePath: ./Dockerfile
-    rootDir: embeddings
-    plan: standard
-    region: oregon
-    branch: main
-    healthCheckPath: /health
-    envVars:
-      - key: TRANSFORMERS_CACHE
-        value: /tmp/transformers_cache
-      - key: API_KEY
-        generateValue: true
-      - key: SHOW_API_KEY_INFO
-        value: "true"
   - type: pserv
     name: dgraph-standalone
     runtime: docker
@@ -45,6 +8,7 @@ services:
     plan: standard
     region: oregon
     branch: main
+    healthCheckPath: /health
     disk:
       name: dgraph-data
       mountPath: /dgraph/data
@@ -59,11 +23,11 @@ services:
       - key: API_TOKEN  # Additional token for custom middleware
         generateValue: true
   - type: web
-    name: hypermode
+    name: nginx-proxy
     runtime: docker
     dockerfilePath: ./Dockerfile
     rootDir: nginx-proxy
-    plan: starter
+    plan: standard
     region: oregon
     branch: main
     healthCheckPath: /health
@@ -74,9 +38,4 @@ services:
         fromService:
           type: pserv
           name: dgraph-standalone
-          property: host
-      - key: modus_service_url  # Dynamic service URL with random suffix  
-        fromService:
-          type: web
-          name: modus
           property: host
