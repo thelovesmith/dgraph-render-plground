@@ -1,65 +1,64 @@
-# Dgraph Infrastructure on Render
+# Dgraph Standalone on Render
 
-A complete infrastructure deployment for Dgraph and sentence embeddings on Render.com.
+A secure, production-ready deployment of Dgraph standalone database on Render.com with authentication and nginx reverse proxy.
 
 ## 🏗️ Architecture Overview
 
-This project deploys a microservices architecture with two main components:
+This project deploys a secure Dgraph infrastructure with two main components:
 
-1. **Embeddings Service** - REST API for generating sentence embeddings using Sentence Transformers
-2. **Dgraph Database** - Graph database service for storing and querying connected data
+1. **Dgraph Standalone** - Graph database service for storing and querying connected data
+2. **Nginx Proxy** - Reverse proxy with authentication and SSL termination for secure access
 
 ## 🚀 Services
 
-### 1. Embeddings Service (`embeddings/`)
+### 1. Dgraph Standalone (`dgraph/`)
 
-A Flask-based REST API that provides sentence embeddings using the `all-MiniLM-L6-v2` model.
-
-**Features:**
-- 🔐 API key authentication
-- 🌐 CORS enabled for web applications  
-- 📊 Multiple input formats (map-based and KServe-compatible)
-- 🏥 Health monitoring endpoints
-- ⚡ Optimized for fast inference
-
-**Key Endpoints:**
-- `GET /health` - Service health check
-- `POST /embedding` - Generate embeddings (requires API key)
-- `GET /api-key-info` - API key usage information
-
-### 2. Dgraph Database Service (`render-dgraph/`)
-
-A standalone Dgraph instance for graph database operations.
+A standalone Dgraph instance for graph database operations with persistent storage.
 
 **Features:**
 - 💾 Persistent storage (10GB disk)
 - 🔧 Standalone configuration
 - 🌐 GraphQL and admin interfaces
 - 📈 Monitoring and health checks
+- 🔐 Token-based authentication
 
 **Key Endpoints:**
 - GraphQL interface at `/graphql`
 - Admin UI at port 8080
 - Health check at `/health`
+- gRPC endpoint at port 9080
+
+### 2. Nginx Proxy (`nginx-proxy/`)
+
+A reverse proxy service that provides secure access to Dgraph with authentication and SSL termination.
+
+**Features:**
+- 🔐 API token authentication
+- 🌐 CORS enabled for web applications
+- 🔒 SSL termination (handled by Render)
+- 🏥 Health monitoring endpoints
+- ⚡ gRPC and HTTP/2 support
+
+**Key Endpoints:**
+- `GET /health` - Proxy health check
+- `/dgraph/*` - HTTP access to Dgraph (requires API token)
+- `/` - gRPC access to Dgraph (requires API token)
 
 ## 📁 Project Structure
 
 ```
-infra/
+dgraph-render-plground/
 ├── README.md                    # This file
 ├── render.yaml                  # Render deployment configuration
-├── embeddings/                  # Embeddings service
-│   ├── app.py                  # Flask application
-│   ├── requirements.txt        # Python dependencies
-│   ├── Dockerfile             # Container configuration
-│   ├── getmodels.py           # Model pre-download script
-│   ├── test_api.py            # API testing script
-│   └── README.md              # Service-specific documentation
-└── render-dgraph/              # Dgraph database service
-    ├── Dockerfile             # Container configuration
-    ├── dgraph-config.yml      # Dgraph configuration
-    ├── start.sh               # Startup script
-    └── README.md              # Service-specific documentation
+├── dgraph/                      # Dgraph database service
+│   ├── Dockerfile              # Container configuration
+│   ├── dgraph-config.yml       # Dgraph configuration
+│   ├── start.sh                # Startup script
+│   └── README.md               # Service-specific documentation
+└── nginx-proxy/                 # Nginx reverse proxy service
+    ├── Dockerfile              # Container configuration
+    ├── nginx.conf              # Nginx configuration
+    └── README.md               # Service-specific documentation
 ```
 
 ## 🛠️ Deployment
@@ -91,17 +90,21 @@ The `render.yaml` file defines the complete infrastructure:
 
 ```yaml
 services:
-  - type: web
-    name: embeddings
+  - type: pserv
+    name: dgraph-standalone
     runtime: docker
-    rootDir: embeddings/
+    rootDir: dgraph/
     healthCheckPath: /health
+    disk:
+      name: dgraph-data
+      mountPath: /dgraph/data
+      sizeGB: 10
     # ... additional configuration
     
   - type: web
-    name: dgraph-standalone  
+    name: nginx-proxy
     runtime: docker
-    rootDir: render-dgraph/
+    rootDir: nginx-proxy/
     healthCheckPath: /health
     # ... additional configuration
 ```
@@ -110,62 +113,81 @@ services:
 
 ### Environment Variables
 
-#### Embeddings Service
-| Variable | Description | Default | Required |
-|----------|-------------|---------|----------|
-| `API_KEY` | Authentication key | Auto-generated | Recommended |
-| `SHOW_API_KEY_INFO` | Show key in info endpoint | `false` | No |
-| `TRANSFORMERS_CACHE` | Model cache directory | `/tmp/transformers_cache` | No |
-
 #### Dgraph Service
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
 | `PORT` | Server port | `8080` | Yes |
 | `DGRAPH_ALPHA_BINDALL` | Allow all IP connections | `true` | Yes |
-| `DGRAPH_ALPHA_WHITELIST` | IP whitelist | `0.0.0.0/0` | Yes |
+| `DGRAPH_TOKEN` | Dgraph authentication token | Auto-generated | Yes |
+| `API_TOKEN` | Custom middleware token | Auto-generated | Yes |
+
+#### Nginx Proxy Service
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `api_token` | API authentication token | Auto-generated | Yes |
+| `dgraph_service_url` | Dgraph service URL | Auto-generated | Yes |
 
 ### Storage
 
 - **Dgraph Data**: 10GB persistent disk mounted at `/dgraph/data`
-- **Model Cache**: Temporary storage for ML models
 
-## Dgraph loading data
-- Set SSH in Render
-- Get the Service SSH connecion string ( click CONNECT > SSH)
-- Use SCP to copy the exported files to the Render disk
-```
+## 🔑 Getting Your API Token
+
+After deployment, you'll need to get your API token to access Dgraph:
+
+1. **Go to Render Dashboard** → Your nginx-proxy service
+2. **Navigate to Environment** tab
+3. **Copy the `api_token` value** (auto-generated)
+4. **Use this token** in your requests as `X-Api-Token` header
+
+## 📊 Data Loading
+
+### Loading Data into Dgraph
+
+1. **Enable SSH** in Render for your Dgraph service
+2. **Get SSH connection string** (click CONNECT > SSH)
+3. **Copy exported files** to the Render disk:
+```bash
 scp ~/Downloads/pyp-export/* srv-d2sh3remcj7s73a5871g@ssh.oregon.render.com:/dgraph/data/export
 ```
-- Use dgraph live or bulk from the Render machine
-From Render, Connect and use the terminal or use ssh.
+4. **Load data** using dgraph live or bulk from the Render machine:
+```bash
+dgraph live -c 1 -f export/g01.rdf -s export/g01.schema -t "<DGRAPH_TOKEN>"
 ```
-dgraph live -c 1 -f export/g01.rdf -s export/g01.schema -t "<token used in dgraph alpha>"
+
+### Using the API
+
+```bash
+# Example GraphQL query through nginx-proxy
+curl -X POST https://your-nginx-proxy.onrender.com/dgraph/graphql \
+  -H "Content-Type: application/json" \
+  -H "X-Api-Token: YOUR_API_TOKEN" \
+  -d '{"query": "{ query { ... } }"}'
 ```
 ## 🧪 Testing
 
-### Embeddings Service
+### Nginx Proxy Service
 
 ```bash
-# Health check
-curl https://your-embeddings-service.onrender.com/health
+# Health check (no auth required)
+curl https://your-nginx-proxy.onrender.com/health
 
-# Get API key (if SHOW_API_KEY_INFO=true)
-curl https://your-embeddings-service.onrender.com/api-key-info
+# Test HTTP access to Dgraph (requires API token)
+curl -H "X-Api-Token: YOUR_API_TOKEN" \
+     https://your-nginx-proxy.onrender.com/dgraph/health
 
-# Generate embeddings
-curl -X POST https://your-embeddings-service.onrender.com/embedding \
-  -H "Content-Type: application/json" \
-  -H "X-Api-Key: YOUR_API_KEY" \
-  -d '{"text1": "Hello world", "text2": "How are you?"}'
+# Test gRPC access to Dgraph (requires API token)
+curl -H "X-Api-Token: YOUR_API_TOKEN" \
+     https://your-nginx-proxy.onrender.com/
 ```
 
-### Dgraph Service
+### Dgraph Service (Direct Access)
 
 ```bash
-# Health check
+# Health check (internal service)
 curl https://your-dgraph-service.onrender.com/health
 
-# State endpoint
+# State endpoint (internal service)
 curl https://your-dgraph-service.onrender.com/state
 ```
 
@@ -180,15 +202,16 @@ Both services provide health check endpoints for monitoring:
 
 ### Resource Usage
 
-- **Embeddings**: ~2GB RAM for model loading
 - **Dgraph**: Varies based on data size (10GB disk allocated)
+- **Nginx Proxy**: Lightweight, minimal resource usage
 - **CPU**: Optimized for single-worker configurations
 
 ## 🔒 Security Considerations
 
-### Embeddings Service
-- API key authentication required for embedding endpoints
+### Nginx Proxy Service
+- API token authentication required for all Dgraph access
 - CORS configured for web application access
+- SSL termination handled by Render
 - Environment-based configuration for sensitive data
 
 ### Dgraph Service
@@ -200,42 +223,58 @@ For production use:
 3. Use environment variables for sensitive configuration
 4. Regular security updates
 
+### Authentication Flow
+1. All external requests go through nginx-proxy
+2. nginx-proxy validates API token before forwarding to Dgraph
+3. Dgraph service is not directly accessible from external networks
+4. Tokens are auto-generated and can be rotated as needed
+
 ## 🚀 Performance
 
-### Embeddings Service
-- **First Request**: 30-60 seconds (model loading)
-- **Subsequent Requests**: <1 second
-- **Concurrency**: Single worker recommended
-- **Timeout**: 120 seconds configured
+### Nginx Proxy Service
+- **Response Time**: <100ms for proxy operations
+- **Concurrency**: High throughput with nginx
+- **Timeout**: 60 seconds configured for gRPC
+- **SSL**: Terminated by Render for optimal performance
 
 ### Dgraph Service
 - **Scaling**: Vertical scaling only (standalone mode)
 - **Storage**: 10GB persistent disk
 - **Backup**: Manual backup procedures recommended
+- **gRPC**: Optimized for high-performance queries
 
 ## 🛠️ Local Development
-
-### Embeddings Service
-
-```bash
-cd embeddings/
-pip install -r requirements.txt
-python getmodels.py  # Pre-download model (optional)
-python app.py        # Start development server
-```
 
 ### Dgraph Service
 
 ```bash
-cd render-dgraph/
+cd dgraph/
 docker build -t dgraph-local .
 docker run -p 8080:8080 -p 9080:9080 dgraph-local
 ```
 
+### Nginx Proxy Service
+
+```bash
+cd nginx-proxy/
+docker build -t nginx-proxy-local .
+docker run -p 80:80 nginx-proxy-local
+```
+
+### Full Stack Local Development
+
+```bash
+# Terminal 1: Start Dgraph
+cd dgraph/ && docker-compose up
+
+# Terminal 2: Start Nginx Proxy
+cd nginx-proxy/ && docker-compose up
+```
+
 ## 📚 Documentation
 
-- [Embeddings Service Documentation](embeddings/README.md) - Detailed API documentation
-- [Dgraph Service Documentation](render-dgraph/README.md) - Database setup and configuration
+- [Dgraph Service Documentation](dgraph/README.md) - Database setup and configuration
+- [Nginx Proxy Documentation](nginx-proxy/README.md) - Proxy configuration and setup
 - [Render Documentation](https://render.com/docs) - Platform-specific guides
 
 ## 🤝 Contributing
@@ -254,25 +293,27 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ### Common Issues
 
-1. **Model Download Failures**
-   - Check internet connectivity
-   - Verify Hugging Face Hub access
-   - Pre-download models locally
+1. **Authentication Failures**
+   - Verify API token is correctly set in environment variables
+   - Check token format in request headers (X-Api-Token or Authorization: Bearer)
+   - Ensure nginx-proxy service is running and accessible
 
-2. **Memory Issues**
-   - Reduce request batch sizes
-   - Monitor service logs
-   - Consider upgrading service tier
+2. **Database Connection Issues**
+   - Verify Dgraph service is running
+   - Check port configurations (8080 for HTTP, 9080 for gRPC)
+   - Review whitelist settings
+   - Ensure nginx-proxy can reach Dgraph service
 
 3. **Deployment Failures**
    - Check `render.yaml` syntax
    - Verify Dockerfile configurations
    - Review build logs in Render Dashboard
+   - Ensure service dependencies are correct
 
-4. **Database Connection Issues**
-   - Verify Dgraph service is running
-   - Check port configurations
-   - Review whitelist settings
+4. **Proxy Configuration Issues**
+   - Verify nginx.conf syntax
+   - Check environment variable substitution
+   - Review service URL configurations
 
 ### Getting Help
 
